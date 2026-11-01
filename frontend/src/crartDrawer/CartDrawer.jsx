@@ -1,7 +1,9 @@
 import { useCart } from "./CartContext";
+import { useNavigate } from "react-router-dom";
 
 function CartDrawer() {
   const { cartOpen, cartItems, total, closeCart, removeItem, increaseQuantity, decreaseQuantity } = useCart();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -95,7 +97,9 @@ function CartDrawer() {
               <span className="font-montserrat font-semibold text-base dark:text-white">Result</span>
               <span className="font-montserrat font-bold text-base dark:text-white">${total.toLocaleString()}</span>
             </div>
-            <button className="w-full bg-[#3b1f0d] hover:bg-[#2a1508] active:scale-[0.98] text-white font-montserrat font-semibold py-4 transition-all duration-200 cursor-pointer tracking-wider text-sm">
+            <button
+              onClick={() => { closeCart(); navigate('/checkout'); }}
+              className="w-full bg-[#3b1f0d] hover:bg-[#2a1508] active:scale-[0.98] text-white font-montserrat font-semibold py-4 transition-all duration-200 cursor-pointer tracking-wider text-sm">
               Pay ${total.toLocaleString()}
             </button>
           </div>

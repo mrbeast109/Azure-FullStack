@@ -12,9 +12,9 @@ function Login() {
 
   const { register, handleSubmit, formState: { errors } } = useForm()
 
-  function onSubmit(data) {
+  async function onSubmit(data) {
     setAuthError(null)
-    const result = login(data.email, data.password)
+    const result = await login(data.email, data.password)
 
     if (!result.success) {
       setAuthError({ message: result.error, type: result.errorType })
@@ -38,7 +38,7 @@ function Login() {
 
         <div className='hidden md:block w-1/2 relative'>
           <img
-            src='https://imgs.search.brave.com/YbDRXvIgKni-tW0jd_BoBL-4NX4_mJ8CvFGA2JmMwZs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZS5obS5jb20vY29u/dGVudC9kYW0vZ2xv/YmFsX2NhbXBhaWdu/cy9zZWFzb25fMDAv/bGFkaWVzLzIwMjAv/bGF1bmNoLzIwMjAt/Q1BELTExLWhtLXN0/dWRpby1ob2xpZGF5/LWNhcHN1bGUuanBn/P2ltd2lkdGg9NDgw/MA'
+            src='https://image.hm.com/assets/hm/23/08/230855ffc54dd42792ca43dbd23976849a181abd.jpg?imwidth=2160'
             className='w-full h-full object-cover object-center'
             alt='Fashion model'
           />
@@ -48,7 +48,7 @@ function Login() {
               / Welcome Back
             </h3>
             <p className='text-white/70 text-sm mt-2 font-montserrat'>
-              Sign in to continue your curated fashion journey.
+              Sign in to your account.
             </p>
           </div>
         </div>
@@ -113,7 +113,7 @@ function Login() {
               <input
                 id='email'
                 type='email'
-                placeholder='you@example.com'
+                placeholder='Email address'
                 className='rounded-lg px-4 py-3 text-sm font-montserrat outline-none transition-all duration-200 placeholder-white/40 text-white'
                 style={{
                   background: 'rgba(255,255,255,0.12)',

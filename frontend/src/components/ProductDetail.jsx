@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import gsap from 'gsap'
-import products from '../data/product'
+import staticProducts from '../data/product'
+import { productsAPI } from '../services/api'
 import { useCart } from '../crartDrawer/CartContext'
 import Reveal from '../utils/Reveal'
 
@@ -33,9 +34,10 @@ function AccordionItem({ title, children }) {
 
 function RelatedCard({ product }) {
   const navigate = useNavigate()
+  const productId = product.productId || product.id
   return (
     <div
-      onClick={() => navigate(`/product/${product.id}`)}
+      onClick={() => navigate(`/product/${productId}`)}
       className="flex-shrink-0 w-44 cursor-pointer group"
     >
       <div className="overflow-hidden bg-[#f5f5f3] dark:bg-[#1e1e1e] aspect-[3/4] flex items-center justify-center">
@@ -49,7 +51,7 @@ function RelatedCard({ product }) {
         {product.name}
       </p>
       <p className="font-montserrat text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-        ${product.price.toLocaleString()}
+        ₹{product.price.toLocaleString()}
       </p>
     </div>
   )
@@ -60,30 +62,63 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const { addToCart } = useCart()
 
-  const product = products.find((p) => p.id === Number(id))
+  const [product, setProduct] = useState(null)
+  const [allProducts, setAllProducts] = useState(staticProducts)
+  const [loading, setLoading] = useState(true)
 
   const [selectedSize, setSelectedSize] = useState(null)
-  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] ?? null)
+  const [selectedColor, setSelectedColor] = useState(null)
   const [activeImg, setActiveImg] = useState(0)
   const [wished, setWished] = useState(false)
   const [addedFeedback, setAddedFeedback] = useState(false)
 
-  // GSAP refs
   const imgColRef  = useRef(null)
   const infoColRef = useRef(null)
 
+  // Fetch product from API, fallback to static data
   useEffect(() => {
     window.scrollTo(0, 0)
-    if (!product) return
-
+    setLoading(true)
     setActiveImg(0)
     setSelectedSize(null)
-    setSelectedColor(product.colors?.[0] ?? null)
 
+    productsAPI.getById(id)
+      .then((data) => {
+        const p = data.product
+        setProduct(p)
+        setSelectedColor(p.colors?.[0] ?? null)
+      })
+      .catch(() => {
+        // Fallback to static data
+        const p = staticProducts.find((p) => p.id === Number(id))
+        setProduct(p || null)
+        setSelectedColor(p?.colors?.[0] ?? null)
+      })
+      .finally(() => setLoading(false))
+  }, [id])
+
+  // Fetch all products for related (fallback to static)
+  useEffect(() => {
+    productsAPI.getAll()
+      .then((data) => setAllProducts(data.products || staticProducts))
+      .catch(() => setAllProducts(staticProducts))
+  }, [])
+
+  // GSAP entrance animation
+  useEffect(() => {
+    if (!product || !imgColRef.current || !infoColRef.current) return
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     tl.fromTo(imgColRef.current, { x: -40, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.7 })
       .fromTo(infoColRef.current, { x: 40, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.7 }, '<')
-  }, [id, product])
+  }, [product])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   if (!product) {
     return (
@@ -99,8 +134,14 @@ export default function ProductDetail() {
     )
   }
 
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+  const productId = product.productId || product.id
+
+  const related = allProducts
+    .filter((p) => {
+      const pCat = p.category
+      const pId = p.productId || p.id
+      return pCat === product.category && pId !== productId
+    })
     .slice(0, 8)
 
   function handleAddToCart() {
@@ -109,7 +150,11 @@ export default function ProductDetail() {
     setTimeout(() => setAddedFeedback(false), 2000)
   }
 
-  const displayPrice = `$${product.price.toLocaleString()}`
+  const displayImages = product.images && product.images.length > 0
+    ? product.images
+    : [product.image]
+
+  const displayPrice = `₹${product.price.toLocaleString()}`
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#111111] font-montserrat transition-colors duration-300">
@@ -137,10 +182,10 @@ export default function ProductDetail() {
                   </span>
                 </div>
               )}
-              {product.images[activeImg].endsWith('.mp4') || product.images[activeImg].endsWith('.webm') ? (
+              {displayImages[activeImg]?.endsWith('.mp4') || displayImages[activeImg]?.endsWith('.webm') ? (
                 <video
                   key={activeImg}
-                  src={product.images[activeImg]}
+                  src={displayImages[activeImg]}
                   autoPlay
                   loop
                   muted
@@ -151,7 +196,7 @@ export default function ProductDetail() {
               ) : (
                 <img
                   key={activeImg}
-                  src={product.images[activeImg]}
+                  src={displayImages[activeImg]}
                   alt={product.name}
                   className="w-full h-full object-cover object-center"
                   style={{ animation: 'fadeInImg 0.4s ease' }}
@@ -161,9 +206,9 @@ export default function ProductDetail() {
                 @keyframes fadeInImg { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
               `}</style>
             </div>
-            {product.images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="flex flex-col gap-2 overflow-y-auto shrink-0 no-scrollbar">
-                {product.images.map((src, i) => (
+                {displayImages.map((src, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}
@@ -171,7 +216,7 @@ export default function ProductDetail() {
                       activeImg === i ? 'border-gray-900 dark:border-gray-300' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
-                    {src.endsWith('.mp4') || src.endsWith('.webm') ? (
+                    {src?.endsWith('.mp4') || src?.endsWith('.webm') ? (
                       <>
                         <video src={src} className="w-full h-full object-cover object-center" muted playsInline />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -201,12 +246,15 @@ export default function ProductDetail() {
               <div className="flex gap-2">
                 {product.colors.map((color) => {
                   const isActive = color === product.colors[0]
-                  const variantId = product.variants?.[color]
+                  const variants = product.variants instanceof Map
+                    ? Object.fromEntries(product.variants)
+                    : (product.variants || {})
+                  const variantId = variants[color]
                   return (
                     <button
                       key={color}
                       onClick={() => {
-                        if (variantId && variantId !== product.id) {
+                        if (variantId && variantId !== productId) {
                           navigate(`/product/${variantId}`)
                         }
                       }}
@@ -220,7 +268,7 @@ export default function ProductDetail() {
                         border: isActive ? '2px solid #1a1a1a' : '1.5px solid #d1d5db',
                         outline: isActive ? '2px solid #1a1a1a' : 'none',
                         outlineOffset: '2px',
-                        cursor: variantId && variantId !== product.id ? 'pointer' : 'default',
+                        cursor: variantId && variantId !== productId ? 'pointer' : 'default',
                       }}
                     />
                   )
@@ -285,7 +333,7 @@ export default function ProductDetail() {
               <p className="dark:text-gray-400">Model is 6'0&quot; / 183 cm and wears size M. We recommend sizing up for an oversized fit. Measurements may vary by ±1 cm.</p>
             </AccordionItem>
             <AccordionItem title="Delivery & Returns">
-              <p className="dark:text-gray-400">Free standard delivery on orders over $2,000. Express delivery available at checkout. Free returns within 30 days.</p>
+              <p className="dark:text-gray-400">Free standard delivery on orders over ₹5,000. Express delivery available at checkout. Free returns within 30 days.</p>
             </AccordionItem>
             <div className="border-t border-gray-200 dark:border-gray-700" />
           </div>
@@ -300,7 +348,7 @@ export default function ProductDetail() {
           <Reveal delay={0.1}>
             <div className="flex gap-5 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
               {related.map((p) => (
-                <RelatedCard key={p.id} product={p} />
+                <RelatedCard key={p.productId || p.id} product={p} />
               ))}
             </div>
           </Reveal>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import { useContext } from 'react';
 import {AuthContext} from '../context/AuthContext'
@@ -7,20 +7,28 @@ import {AuthContext} from '../context/AuthContext'
 function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [mode,setMode] = useState('signup');
-  const [successMsg, setSuccessMsg] = useState(false);
-  const {signup, user, logout, login} = useContext(AuthContext);
+  const [errorMsg, setErrorMsg] = useState('');
+  const {signup, login} = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const {register, handleSubmit, formState:{errors}} = useForm();
 
-  function onSubmit(data){
-    if(mode === "signup"){
-      const result = signup(data.email, data.password);
+  async function onSubmit(data){
+    setErrorMsg('');
+    if(mode === 'signup'){
+      const result = await signup(data.email, data.password);
       if(result?.success){
-        setSuccessMsg(true);
-        setTimeout(() => setSuccessMsg(false), 3500);
+        navigate('/');
+      } else {
+        setErrorMsg(result?.error || 'Sign up failed. Please try again.');
       }
-    }else{
-      login(data.email, data.password);
+    } else {
+      const result = await login(data.email, data.password);
+      if(result?.success){
+        navigate('/');
+      } else {
+        setErrorMsg(result?.error || 'Login failed. Please try again.');
+      }
     }
   }
 
@@ -45,7 +53,7 @@ function Signup() {
               / Style That Represents You
             </h3>
             <p className='text-white/70 text-sm mt-2 font-montserrat'>
-              Join AZURE and explore curated fashion collections.
+              New arrivals every week.
             </p>
           </div>
         </div>
@@ -73,25 +81,7 @@ function Signup() {
             Sign up to get started
           </p>
 
-          {successMsg && (
-            <div
-              className='flex items-center gap-2 mb-4 px-4 py-3 rounded-xl text-sm font-montserrat font-medium text-white'
-              style={{
-                background: 'rgba(34,197,94,0.25)',
-                border: '1px solid rgba(34,197,94,0.5)',
-                animation: 'toastIn 0.35s ease forwards',
-              }}
-            >
-              <style>{`
-                @keyframes toastIn {
-                  from { opacity: 0; transform: translateY(-8px); }
-                  to   { opacity: 1; transform: translateY(0); }
-                }
-              `}</style>
-              <span className='text-base'>✓</span>
-              Account created successfully!
-            </div>
-          )}
+
 
           <form className='flex flex-col gap-5' onSubmit={handleSubmit(onSubmit)}>
 
@@ -178,6 +168,10 @@ function Signup() {
                 Minimum 8 characters recommended
               </p>
             </div>
+
+            {errorMsg && (
+              <p className='text-xs text-red-400 font-montserrat text-center -mb-1'>{errorMsg}</p>
+            )}
 
             <button
               type='submit'

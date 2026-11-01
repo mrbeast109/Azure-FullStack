@@ -1,18 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../crartDrawer/CartContext'
 import { useTheme } from '../context/ThemeContext'
-import products from '../data/product'
+import staticProducts from '../data/product'
+import { productsAPI } from '../services/api'
 import Reveal from '../utils/Reveal'
 
-const seen = new Set()
-const allProducts = products.filter(p => {
-  if (seen.has(p.name)) return false
-  seen.add(p.name)
-  return true
-})
-
-const CATEGORY_OPTIONS = [...new Set(allProducts.map(p => p.category))].sort()
 const SORT_OPTIONS = ['Recommended', 'Price: Low–High', 'Price: High–Low', 'Newest']
 const ITEMS_PER_PAGE = 8
 
@@ -49,7 +42,7 @@ function ProductCard({ product }) {
           </svg>
         </button>
 
-        <Link to={`/product/${product.id}`} className="block w-full h-full">
+        <Link to={`/product/${product.productId || product.id}`} className="block w-full h-full">
           <img
             src={product.image}
             alt={product.name}
@@ -75,7 +68,7 @@ function ProductCard({ product }) {
       </div>
 
       <div className="mt-2.5">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.productId || product.id}`}>
           <h3
             style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.4 }}
             className="hover:underline text-[#1a1a1a] dark:text-gray-200"
@@ -138,6 +131,34 @@ function Collection() {
   const [selectedCategories, setSelectedCategories] = useState([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { isDark } = useTheme()
+
+  // Fetch products from API, fallback to static data
+  const [allProducts, setAllProducts] = useState(() => {
+    const seen = new Set()
+    return staticProducts.filter(p => {
+      if (seen.has(p.name)) return false
+      seen.add(p.name)
+      return true
+    })
+  })
+
+  useEffect(() => {
+    productsAPI.getAll()
+      .then(data => {
+        if (data.products && data.products.length > 0) {
+          const seen = new Set()
+          const deduped = data.products.filter(p => {
+            if (seen.has(p.name)) return false
+            seen.add(p.name)
+            return true
+          })
+          setAllProducts(deduped)
+        }
+      })
+      .catch(() => { /* keep static fallback */ })
+  }, [])
+
+  const CATEGORY_OPTIONS = [...new Set(allProducts.map(p => p.category))].sort()
 
   const dm = isDark ? '#111111' : '#fff'
   const dmSurface = isDark ? '#1a1a1a' : '#f9f8f6'
@@ -360,7 +381,7 @@ function Collection() {
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" style={{ gap: '24px 14px', marginTop: 24 }}>
               {paginated.length > 0 ? (
                 paginated.map(product => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.productId || product.id} product={product} />
                 ))
               ) : (
                 <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: 'Montserrat, sans-serif', fontSize: '13px', color: '#999', letterSpacing: '0.06em' }}>
@@ -406,7 +427,7 @@ function Collection() {
                   The Winter Edit
                 </h2>
                 <p style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '11px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 14 }}>
-                  Explore our curated selection of architectural outerwear and timeless knits.
+                  Outerwear and knits for the winter season.
                 </p>
                 <button
                   style={{ background: 'none', border: '1px solid rgba(255,255,255,0.85)', color: '#fff', padding: '8px 18px', fontFamily: 'Montserrat, sans-serif', fontSize: '10px', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', cursor: 'pointer', transition: 'background 0.25s, color 0.25s' }}
@@ -427,7 +448,7 @@ function Collection() {
                 CONSCIOUS LUXURY
               </h3>
               <p style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '12px', color: dmSubText, lineHeight: 1.75, maxWidth: 260, margin: 0 }}>
-                95% of our current collection is crafted from recycled or sustainably sourced materials. Design with purpose, wear with pride.
+                95% of the current collection uses recycled or sustainably sourced materials.
               </p>
               <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Montserrat, sans-serif', fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#1a1a1a', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0, marginTop: 4 }}>
                 READ OUR STORY

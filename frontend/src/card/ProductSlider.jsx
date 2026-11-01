@@ -1,14 +1,27 @@
 import { useRef, useState, useEffect } from "react";
-import products from "../data/product";
+import staticProducts from "../data/product";
+import { productsAPI } from "../services/api";
 import ProductCard from "./ProductCard";
 
 export default function ProductSlider() {
   const sliderRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
+  const [products, setProducts] = useState(staticProducts);
 
   const touchStartX = useRef(null);
   const touchStartScroll = useRef(null);
+
+  // Fetch from API, fallback to static data
+  useEffect(() => {
+    productsAPI.getAll()
+      .then((data) => {
+        if (data.products && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => { /* keep static fallback */ });
+  }, []);
 
   const updateButtons = () => {
     const el = sliderRef.current;
@@ -23,7 +36,7 @@ export default function ProductSlider() {
     updateButtons();
     el.addEventListener("scroll", updateButtons, { passive: true });
     return () => el.removeEventListener("scroll", updateButtons);
-  }, []);
+  }, [products]);
 
   const scrollBy = (dir) => {
     const el = sliderRef.current;
@@ -76,7 +89,7 @@ export default function ProductSlider() {
         onTouchEnd={handleTouchEnd}
       >
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.productId || product.id} product={product} />
         ))}
       </div>
 

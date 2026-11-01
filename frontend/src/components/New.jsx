@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useCart } from '../crartDrawer/CartContext'
 import Reveal from '../utils/Reveal'
-import products from '../data/product'
-
-const newArrivals = products.filter(p => p.badge && p.badge.toUpperCase().includes('NEW ARRIVAL'))
+import staticProducts from '../data/product'
+import { productsAPI } from '../services/api'
 
 
 function NewArrivalCard({ product }) {
@@ -14,7 +13,7 @@ function NewArrivalCard({ product }) {
   return (
     <div className="flex flex-col group cursor-pointer">
       <div className="relative overflow-hidden bg-[#f5f5f3] dark:bg-[#1e1e1e] aspect-[3/4] flex items-center justify-center">
-        <Link to={`/product/${product.id}`} className="block w-full h-full">
+        <Link to={`/product/${product.productId || product.id}`} className="block w-full h-full">
           <img
             src={product.image}
             alt={product.name}
@@ -30,7 +29,7 @@ function NewArrivalCard({ product }) {
       </div>
 
       <div className="flex items-start justify-between mt-1 px-0.5">
-        <Link to={`/product/${product.id}`} className="flex flex-col gap-0.5 hover:underline">
+        <Link to={`/product/${product.productId || product.id}`} className="flex flex-col gap-0.5 hover:underline">
           <h3 className="font-montserrat text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug">
             {product.name}
           </h3>
@@ -49,6 +48,20 @@ function NewArrivalCard({ product }) {
 }
 
 function New() {
+  const [newArrivals, setNewArrivals] = useState(
+    staticProducts.filter(p => p.badge && p.badge.toUpperCase().includes('NEW ARRIVAL'))
+  )
+
+  useEffect(() => {
+    productsAPI.getAll({ badge: 'NEW ARRIVAL' })
+      .then(data => {
+        if (data.products && data.products.length > 0) {
+          setNewArrivals(data.products)
+        }
+      })
+      .catch(() => { /* keep static fallback */ })
+  }, [])
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#111111] transition-colors duration-300">
 
@@ -171,7 +184,7 @@ function New() {
       <div className="px-6 md:px-10 pb-10">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-5 gap-y-10">
           {newArrivals.slice(0, 4).map((product, i) => (
-            <Reveal key={product.id} delay={i * 0.08}>
+            <Reveal key={product.productId || product.id} delay={i * 0.08}>
               <NewArrivalCard product={product} />
             </Reveal>
           ))}

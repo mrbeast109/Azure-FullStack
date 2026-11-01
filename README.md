@@ -1,126 +1,181 @@
-# AZURE
+# E-commerce Website
 
-**Live** - [https://azure-taupe.vercel.app/](https://azure-taupe.vercel.app/)
+A full-stack fashion e-commerce site built with React on the frontend and Node.js/Express on the backend, with MongoDB Atlas as the database.
 
-AZURE is a frontend fashion e-commerce website built as a complete shopping experience for a premium clothing brand. The site covers product browsing, detailed product pages, a working cart, user accounts, and editorial-style pages for new arrivals and brand storytelling. The design leans toward clean layouts, strong typography, and smooth interactions rather than a generic storefront look.
+The site includes a product catalog with filtering, a cart drawer, product detail pages with image galleries, user authentication, and a checkout flow that saves orders to the database.
 
-This is a client-side React application. Product data lives in a local JavaScript file, and user authentication is handled through the browser's local storage. There is no separate backend server.
-
-## Features
-
-**Home**
-The landing page opens with a full-width hero video, followed by promotional imagery, a horizontally scrollable new collection slider, category highlights, and links into the full product catalog.
-
-**New Arrivals**
-A dedicated page for seasonal drops with editorial layouts, featured products, and quick add-to-cart actions on hover.
-
-**Collections**
-The main shop page. Products can be filtered by category, sorted by price, and browsed with pagination. A sidebar on desktop and a slide-out filter panel on mobile keep the layout usable on smaller screens.
-
-**Product Detail**
-Individual product pages include an image gallery with thumbnails, color swatches that link to color variants, size selection, expandable description sections, related products, and add-to-bag functionality.
-
-**Shopping Cart**
-A slide-out cart drawer lets users add items from anywhere on the site, adjust quantities, remove products, and see a running total. The cart opens automatically when something is added.
-
-**Authentication**
-Users can sign up and log in with email and password. Credentials are stored locally in the browser. The navbar updates to show a logout option when someone is signed in.
-
-**About**
-A brand-focused page with hero imagery, scroll-triggered content reveals, and sections on the company's design philosophy, craftsmanship, and sustainability messaging.
-
-**Newsletter**
-The footer includes an email signup form powered by EmailJS. Subscribers are notified through a configured email template.
-
-**Checkout**
-The checkout route exists as a placeholder and is marked as coming soon.
+---
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| UI Library | React 19 |
-| Build Tool | Vite 8 |
-| Routing | React Router DOM 7 |
-| Styling | Tailwind CSS 4 |
-| Animations | GSAP |
-| Forms | React Hook Form |
-| Icons | Font Awesome (React) |
-| Email | EmailJS |
-| Linting | Oxlint |
+### Frontend
 
-Custom Google Fonts are used throughout the site: Cinzel for the logo, Montserrat for body text, Michroma for display headings, and Red Rose for accent italic text.
+| Package | Version | Purpose |
+|---------|---------|---------|
+| React | 19 | UI framework |
+| Vite | 8 | Build tool and dev server |
+| React Router DOM | 7 | Client-side routing |
+| Tailwind CSS | 4 | Styling |
+| GSAP | 3 | Animations |
+| Lucide React | — | Icons |
+| EmailJS | 4 | Contact form emails |
 
-## Getting Started
+### Backend
 
-Make sure Node.js is installed, then clone the repository and install dependencies:
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Node.js | — | Runtime |
+| Express | 4 | Web server |
+| Mongoose | 8 | MongoDB object modelling |
+| bcryptjs | 2 | Password hashing |
+| jsonwebtoken | 9 | JWT authentication |
+| multer | 1 | File uploads |
+| dotenv | 16 | Environment variables |
+| nodemon | 3 | Dev auto-restart |
 
-```bash
-npm install
-```
+### Database
 
-Start the development server:
+MongoDB Atlas — cloud-hosted MongoDB. Stores users, products, and orders.
 
-```bash
-npm run dev
-```
-
-
-Other useful commands:
-
-```bash
-npm run build    # production build
-npm run preview  # preview the production build locally
-npm run lint     # run Oxlint
-```
-
-## Environment Variables
-
-The newsletter form in the footer uses EmailJS. Create a `.env` file in the project root with your credentials:
-
-```
-VITE_EMAILJS_SERVICE_ID=your_service_id
-VITE_EMAILJS_TEMPLATE_ID=your_template_id
-VITE_EMAILJS_PUBLIC_KEY=your_public_key
-```
-
-If these values are not set, the form will fall back to placeholder strings and the subscription will not go through until they are configured.
+---
 
 ## Project Structure
 
 ```
-src/
-├── components/       # Pages and shared layout (Navbar, Footer, Home, etc.)
-├── card/             # Product cards, grid, and slider components
-├── context/          # AuthContext for login and signup state
-├── crartDrawer/      # Cart context and slide-out drawer
-├── data/             # Product catalog (product.js)
-├── App.jsx           # Route definitions and providers
-├── main.jsx          # App entry point
-└── index.css         # Tailwind imports and custom font theme
+ecommerceWebsite/
+├── frontend/
+│   ├── src/
+│   │   ├── components/       pages and UI components
+│   │   ├── context/          auth and theme context
+│   │   ├── crartDrawer/      cart state and drawer UI
+│   │   ├── card/             product card components
+│   │   ├── data/             static product fallback data
+│   │   ├── services/api.js   all backend API calls
+│   │   └── utils/            scroll reveal utility
+│   ├── .env
+│   ├── index.html
+│   └── package.json
+└── backend/
+    ├── config/db.js          MongoDB connection
+    ├── controllers/          request handlers
+    ├── middleware/           JWT auth, file upload
+    ├── models/               User, Product, Order schemas
+    ├── routes/               API route definitions
+    ├── scripts/              database seed script
+    ├── .env
+    └── server.js
 ```
 
-## Routes
+---
 
-| Path | Page |
-| --- | --- |
-| `/` | Home |
-| `/newarrivals` | New Arrivals |
-| `/collections` | Product Collection |
-| `/product/:id` | Product Detail |
-| `/about` | About |
-| `/login` | Login |
-| `/signup` | Sign Up |
-| `/checkout` | Checkout (placeholder) |
+## Prerequisites
 
-## Product Data
+- Node.js 18 or higher
+- A MongoDB Atlas account (free tier works)
 
-All products are defined in `src/data/product.js`. Each entry includes a name, price, category, description, sizes, color options, and image URLs. Categories cover shirts, dresses, trousers, shoes, outerwear, knitwear, leather pieces, and accessories.
+---
 
-New arrival items on the New Arrivals page use a separate inline product list. Only products present in the main catalog file will have full detail pages.
+## MongoDB Atlas Setup
 
-## Notes
+1. Sign in at [cloud.mongodb.com](https://cloud.mongodb.com) and create a new cluster
+2. Under **Network Access**, add your IP address (or `0.0.0.0/0` to allow all)
+3. Under **Database Access**, create a user with read and write permissions
+4. Click **Connect**, choose **Drivers**, and copy the connection string
+5. Replace `<password>` in the string with your database user's password
 
-User accounts and cart contents are stored in the browser. Clearing site data or switching devices will reset that information. This setup works well for demos and portfolio projects but is not meant for production use without a real backend and database.
+---
 
-The checkout flow has not been implemented yet. The cart drawer includes a pay button, but completing an order is not supported at this stage.
+## Environment Variables
+
+**backend/.env**
+
+```
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/ecommerce?retryWrites=true&w=majority
+JWT_SECRET=pick_a_long_random_string
+NODE_ENV=development
+```
+
+**frontend/.env**
+
+```
+VITE_API_URL=http://localhost:5000/api
+```
+
+---
+
+## Running the Project
+
+You need two terminals running at the same time.
+
+**Terminal 1 — Backend**
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+The API starts at `http://localhost:5000`.
+
+**Terminal 2 — Frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The site opens at `http://localhost:5173`.
+
+---
+
+## Seeding the Database
+
+After the backend connects to Atlas successfully, run this once to load the product catalog:
+
+```bash
+cd backend
+node scripts/seedProducts.js
+```
+
+This inserts all products using upsert, so it is safe to run more than once.
+
+---
+
+## API Routes
+
+### Auth
+
+```
+POST   /api/auth/signup      register a new account
+POST   /api/auth/login       log in, returns a JWT
+GET    /api/auth/me          get the logged-in user's profile  (requires JWT)
+```
+
+### Products
+
+```
+GET    /api/products         list all products (supports ?category= &badge= &search=)
+GET    /api/products/:id     single product by MongoDB id or numeric productId
+POST   /api/products         create a product  (admin only)
+PUT    /api/products/:id     update a product  (admin only)
+DELETE /api/products/:id     delete a product  (admin only)
+POST   /api/products/seed    bulk seed from a JSON array  (admin only)
+```
+
+### Orders
+
+```
+POST   /api/orders           place an order  (requires JWT)
+GET    /api/orders/my        list the current user's orders  (requires JWT)
+GET    /api/orders/:id       get a single order  (requires JWT)
+GET    /api/orders           list all orders  (admin only)
+PUT    /api/orders/:id/status  update order status  (admin only)
+```
+
+---
+
+## Making a User an Admin
+
+In MongoDB Atlas, open the `users` collection and change the `role` field for that document from `"user"` to `"admin"`. Admin accounts can create, update, and delete products, and manage all orders.
