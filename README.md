@@ -1,4 +1,4 @@
-# E-commerce Website
+# AZURE ecommerce website
 
 A full-stack fashion e-commerce site built with React on the frontend and Node.js/Express on the backend, with MongoDB Atlas as the database.
 
