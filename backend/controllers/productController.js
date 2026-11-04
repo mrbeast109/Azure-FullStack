@@ -1,7 +1,15 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
 
 const getProducts = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is disconnected. Please ensure MONGO_URI is set in Render environment variables and 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.',
+      });
+    }
+
     const { category, collection, badge, search, page = 1, limit = 100 } = req.query;
 
     const filter = {};

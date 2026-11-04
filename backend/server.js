@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 
 connectDB();
@@ -59,7 +60,16 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'API is running', timestamp: new Date() });
+  const dbState = mongoose.connection.readyState;
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  res.json({
+    success: true,
+    message: 'API is running',
+    database: states[dbState] || 'unknown',
+    hasMongoUri: Boolean(process.env.MONGO_URI),
+    hasJwtSecret: Boolean(process.env.JWT_SECRET),
+    timestamp: new Date(),
+  });
 });
 
 app.use((req, res) => {

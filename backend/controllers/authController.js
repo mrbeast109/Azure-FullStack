@@ -1,11 +1,23 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateToken = (id) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured on the server');
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
 
 const signup = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is disconnected. Please ensure MONGO_URI is set in Render environment variables and 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.',
+      });
+    }
+
     const { name, email, password } = req.body;
 
     if (!email || !password) {
@@ -37,13 +49,20 @@ const signup = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Signup failed',
+      message: error.message || 'Signup failed',
     });
   }
 };
 
 const login = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is disconnected. Please ensure MONGO_URI is set in Render environment variables and 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.',
+      });
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -81,7 +100,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Login failed' });
+    res.status(500).json({ success: false, message: error.message || 'Login failed' });
   }
 };
 
