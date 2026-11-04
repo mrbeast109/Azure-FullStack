@@ -3,7 +3,7 @@ function getBaseUrl() {
   if (!url) {
     // In production, fallback to live Render backend instead of unreachable localhost
     if (import.meta.env.PROD) {
-      return 'https://azure-fullstack.onrender.com/api';
+      return 'https://azure-fullstack-1.onrender.com/api';
     }
     return 'http://localhost:5000/api';
   }
@@ -12,7 +12,7 @@ function getBaseUrl() {
     // Relative paths like '/api' only work when a reverse proxy is present (e.g. local Vite dev)
     // On production static sites, fallback to the full backend URL
     if (import.meta.env.PROD) {
-      return 'https://azure-fullstack.onrender.com/api';
+      return 'https://azure-fullstack-1.onrender.com/api';
     }
     return url;
   }

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: azure-fullstack
+    name: Azure-FullStack-1
     runtime: node
     rootDir: backend
     buildCommand: npm install
@@ -29,4 +29,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://azure-fullstack.onrender.com/api
+        value: https://azure-fullstack-1.onrender.com/api
