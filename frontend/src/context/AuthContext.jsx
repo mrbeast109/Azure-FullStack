@@ -29,10 +29,13 @@ function AuthProvider({ children }) {
       setUser(data.user)
       return { success: true }
     } catch (err) {
+      const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError';
       return {
         success: false,
-        errorType: err.errorType || 'SERVER_ERROR',
-        error: err.message || 'Something went wrong. Please try again.',
+        errorType: err.errorType || (isNetworkError ? 'NETWORK_ERROR' : 'SERVER_ERROR'),
+        error: isNetworkError
+          ? 'Unable to connect to server. Please ensure the backend is running.'
+          : err.message || 'Something went wrong. Please try again.',
       }
     }
   }
@@ -45,10 +48,13 @@ function AuthProvider({ children }) {
       setUser(data.user)
       return { success: true }
     } catch (err) {
+      const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError';
       return {
         success: false,
-        errorType: err.errorType || 'SERVER_ERROR',
-        error: err.message || 'Something went wrong. Please try again.',
+        errorType: err.errorType || (isNetworkError ? 'NETWORK_ERROR' : 'SERVER_ERROR'),
+        error: isNetworkError
+          ? 'Unable to connect to server. Please ensure the backend is running.'
+          : err.message || 'Something went wrong. Please try again.',
       }
     }
   }

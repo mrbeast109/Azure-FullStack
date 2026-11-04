@@ -12,12 +12,24 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: CLIENT_URL
+        fromService:
+          type: static
+          name: azure-frontend
+          property: host
 
   - type: static
     name: azure-frontend
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: /api
+        fromService:
+          type: web
+          name: azure-backend
+          property: host

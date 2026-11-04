@@ -1,4 +1,22 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+function getBaseUrl() {
+  let url = import.meta.env.VITE_API_URL;
+  if (!url) {
+    return 'http://localhost:5000/api';
+  }
+  url = url.trim().replace(/\/+$/, '');
+  if (url.startsWith('/')) {
+    return url;
+  }
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  if (!/\/api$/i.test(url)) {
+    url = `${url}/api`;
+  }
+  return url;
+}
+
+const BASE_URL = getBaseUrl();
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('azureToken');
@@ -18,11 +36,23 @@ async function request(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  let data = {};
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+  } else {
+    const text = await response.text();
+    data = { message: text || `HTTP error ${response.status}: ${response.statusText}` };
+  }
 
   if (!response.ok) {
-    const err = new Error(data.message || 'Request failed');
+    const err = new Error(data.message || `Request failed with status ${response.status}`);
     err.errorType = data.errorType;
+    err.status = response.status;
     err.success = false;
     throw err;
   }
