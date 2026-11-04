@@ -70,7 +70,7 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'API is running',
     database: states[dbState] || 'unknown',
-    hasMongoUri: Boolean(process.env.MONGO_URI),
+    hasMongoUri: Boolean(process.env.MONGO_URI || process.env.MONGODB_URI),
     hasJwtSecret: Boolean(process.env.JWT_SECRET),
     timestamp: new Date(),
   });
