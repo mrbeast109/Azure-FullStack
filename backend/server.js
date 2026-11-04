@@ -13,15 +13,18 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
+  'https://azure-full-stack.vercel.app',
 ];
 
 if (process.env.CLIENT_URL) {
-  const clientUrl = process.env.CLIENT_URL.trim();
-  if (clientUrl.startsWith('http://') || clientUrl.startsWith('https://')) {
-    allowedOrigins.push(clientUrl);
-  } else {
-    allowedOrigins.push(`https://${clientUrl}`);
-    allowedOrigins.push(`http://${clientUrl}`);
+  const clientUrls = process.env.CLIENT_URL.split(',').map((u) => u.trim());
+  for (const clientUrl of clientUrls) {
+    if (clientUrl.startsWith('http://') || clientUrl.startsWith('https://')) {
+      allowedOrigins.push(clientUrl);
+    } else {
+      allowedOrigins.push(`https://${clientUrl}`);
+      allowedOrigins.push(`http://${clientUrl}`);
+    }
   }
 }
 
@@ -34,9 +37,10 @@ app.use(cors({
       const parsedOrigin = new URL(origin);
       const isExplicitlyAllowed = allowedOrigins.includes(origin);
       const isRenderDomain = parsedOrigin.hostname.endsWith('.onrender.com');
+      const isVercelDomain = parsedOrigin.hostname.endsWith('.vercel.app');
       const isLocalhost = /^(localhost|127\.0\.0\.1)$/.test(parsedOrigin.hostname);
 
-      if (isExplicitlyAllowed || isRenderDomain || isLocalhost) {
+      if (isExplicitlyAllowed || isRenderDomain || isVercelDomain || isLocalhost) {
         return callback(null, true);
       }
     } catch {
